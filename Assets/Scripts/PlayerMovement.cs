@@ -3,6 +3,8 @@ using System.Collections;
 
 public class PlayerMovement : MonoBehaviour {
 
+    public bool jumpBegan = false;
+    
     [SerializeField]
     private Rigidbody2D body;
 
@@ -15,6 +17,8 @@ public class PlayerMovement : MonoBehaviour {
     private float jumpForce;
     [SerializeField]
     private float maxSpeed;
+    [SerializeField]
+    private float jumpHeight;
 
     private Vector2 speed;
 
@@ -40,7 +44,11 @@ public class PlayerMovement : MonoBehaviour {
         }
         if( Input.GetKeyDown( KeyCode.Space ) )
         {
-            body.AddForce( new Vector2( 0f, jumpForce ), ForceMode2D.Impulse );
+            if( jumpBegan == false )
+            {
+                jumpBegan = true;
+                StartCoroutine( Jumping() );
+            }
         }
 
         if( transform.position.y <= -1.6f )
@@ -60,4 +68,31 @@ public class PlayerMovement : MonoBehaviour {
             transform.position = new Vector3( 2.5f, transform.position.y, 0f );
         }
 	}
+
+    IEnumerator Jumping()
+    {
+        bool jumping = true;
+        float startHeight = transform.position.y;
+        float maxHeight = startHeight + jumpHeight;
+        float jumpForceStart = jumpForce;
+        while( jumping )
+        {
+            if( Input.GetKey( KeyCode.Space ) )
+            {
+                body.AddForce( new Vector2( 0f, jumpForce ), ForceMode2D.Force );
+                jumpForce *= .9f;
+            }
+            if( Input.GetKeyUp( KeyCode.Space ) )
+            {
+                jumping = false;
+            }
+            if( transform.position.y >= maxHeight )
+            {
+                jumping = false;
+            }
+            yield return null;
+        }
+        jumpForce = jumpForceStart;
+        yield return null;
+    }
 }
